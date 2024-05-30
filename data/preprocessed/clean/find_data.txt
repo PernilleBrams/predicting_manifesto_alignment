@@ -1,4 +1,4 @@
-Unwrap the two folders 'manifestos' and 'parliamentary_dialogue' to be in /clean by unwrapping .zip files found in here:
+Get the two folders 'manifestos' and 'parliamentary_dialogue' to be in /clean by unwrapping .zip files found in here:
 
 Data for /clean:
 https://drive.google.com/drive/folders/1hy3LNW7T7UaxuxOvB02zPq7C-XBDgs0a?usp=sharing
