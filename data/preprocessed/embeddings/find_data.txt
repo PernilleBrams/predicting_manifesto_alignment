@@ -1,0 +1,4 @@
+Get the two folders 'manifesto_BERT_embeddings_1997_2022' and 'speech1997_2022_BERT' to be in /embeddings by unwrapping .zip files found in here:
+
+Data for /embeddings:
+https://drive.google.com/drive/folders/1RsJQFxE2MJKfWfyvW0xl8DMV8yXjRDZ2?usp=sharing
