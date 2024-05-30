@@ -1,0 +1,26 @@
+# Ignore Mac system files
+.DS_Store
+
+# Ignore Python cache directories
+__pycache__/
+*.py[cod]
+
+# Ignore virtual environment directories
+venv/
+env/
+.venv/
+.env/
+
+# Ignore Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Ignore logs and temporary files
+*.log
+*.tmp
+
+# Ignore specific configuration files
+.env
+.env.local
+
+# Ignore all files in following dirs
+# dir/
