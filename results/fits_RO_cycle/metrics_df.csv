@@ -1,0 +1,6 @@
+,Model,Evaluation_Set,MSE,MAE,RMSE,R2,Params,Feature_Subset
+1,XGBoost,Holdout Cycle,1.9674124683478278,1.076466853202468,1.4026448118992305,0.127142239342941,"{'learning_rate': 0.01, 'max_depth': 2, 'n_estimators': 100}","['seats', 'government_status_coalition', 'government_status_opposition', 'government_status_support', 'state_market']"
+2,LinearRegression,Holdout Cycle,2.11944310126875,1.1220218351567643,1.455830725485882,0.059692673002604835,{'fit_intercept': True},"['days_since_election', 'seats', 'state_market']"
+0,RandomForest,Holdout Cycle,2.1846169441532157,1.199237796178738,1.478044973657167,0.030777793449502266,"{'max_depth': 10, 'min_samples_leaf': 1, 'min_samples_split': 2, 'n_estimators': 50}","['seats', 'government_status_coalition', 'government_status_opposition', 'government_status_support', 'state_market']"
+4,Mean,Holdout Cycle,2.253989775913573,1.1766287283160657,1.5013293362595608,0.0,N/A,N/A
+3,LSTM,Holdout Cycle,2.4857132122186267,1.1798199305949124,1.5766144779934714,-0.10280589503168125,"{'units': 5, 'epochs': 10, 'batch_size': 32, 'dropout_rate': 0.2}","['days_since_election', 'seats', 'state_market']"
