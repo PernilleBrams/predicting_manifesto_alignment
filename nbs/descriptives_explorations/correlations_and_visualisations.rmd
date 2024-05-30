@@ -1,0 +1,202 @@
+---
+title: "Untitled"
+output: html_document
+date: "2024-05-23"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+path = "/Users/pbrams/Desktop/AARHUS_UNIVERSITY/kandidat/data_sci/data_sci_project/DS_EXAM_BACKUP/data/combined/incomplete_dates_1997_2022_with_parlgov.csv"
+
+library(pacman)
+
+pacman::p_load(tidyverse,
+               ggplot2,
+               lmerTest,
+               lme4)
+
+df <- read.csv(path)
+
+df <- df %>%
+  filter(Party_Name != 'Alternativet',
+         Party_Name != 'Nye Borgerlige',
+         Date > as.Date('1998-03-12'),
+         Date < as.Date('2019-06-05')) # Ensure dates are in Date format
+
+colnames(df)
+
+# Defining the election cycles as a list of tuples
+election_cycles <- list(
+  c('1998-03-12', '2001-11-20'),
+  c('2001-11-21', '2005-02-08'),
+  c('2005-02-09', '2007-11-13'),
+  c('2007-11-14', '2011-09-15'),
+  c('2011-09-16', '2015-06-18'),
+  c('2015-06-19', '2019-06-05')
+)
+
+
+# Converting to Date format
+election_cycles <- lapply(election_cycles, as.Date)
+
+# Adding election_cycle variable to the dataframe
+df <- df %>%
+  mutate(election_cycle = case_when(
+    Date >= election_cycles[[1]][1] & Date <= election_cycles[[1]][2] ~ "1998-2001",
+    Date >= election_cycles[[2]][1] & Date <= election_cycles[[2]][2] ~ "2001-2005",
+    Date >= election_cycles[[3]][1] & Date <= election_cycles[[3]][2] ~ "2005-2007",
+    Date >= election_cycles[[4]][1] & Date <= election_cycles[[4]][2] ~ "2007-2011",
+    Date >= election_cycles[[5]][1] & Date <= election_cycles[[5]][2] ~ "2011-2015",
+    Date >= election_cycles[[6]][1] & Date <= election_cycles[[6]][2] ~ "2015-2019",
+    TRUE ~ NA_character_
+  ))
+
+# Filtering out rows with NA election_cycle
+df <- df %>% filter(!is.na(election_cycle))
+
+# Calculate Z-scores for euclidean_dist_from_dynamic
+df <- df %>%
+  mutate(z_score = (euclidean_dist_from_dynamic - mean(euclidean_dist_from_dynamic, na.rm = TRUE)) / sd(euclidean_dist_from_dynamic, na.rm = TRUE))
+
+# Filter out outliers (|z_score| > 3)
+df <- df %>% filter(abs(z_score) <= 3)
+
+# Replacing an error value
+df <- df %>% mutate(government_status = ifelse(government_status == 'minority government','coalition',government_status))
+
+# Get year
+df <- df %>%
+  mutate(Year = format(as.Date(Date), "%Y"))
+
+# Check nrows
+nrow(df)
+```
+
+```{r}
+
+ggplot(df, aes(x = Date, y = euclidean_dist_from_dynamic, color = Party_Name, group = Party_Name)) +
+  geom_line() +
+  labs(title = "Euclidean Distance Across Different Election Cycles",
+       x = "Date",
+       y = "Euclidean Distance") +
+  facet_wrap(~ election_cycle, scales = "free_x") +
+  theme_bw() +
+  theme(strip.text = element_text(face = "bold"))
+
+ggplot(df, aes(x = Date, y = euclidean_dist_from_dynamic, color = government_status, group = government_status)) +
+  geom_line() +
+  labs(title = "Euclidean Distance Across Different Election Cycles",
+       x = "Date",
+       y = "Euclidean Distance") +
+  facet_wrap(~ election_cycle, scales = "free_x") +
+  theme_bw() +
+  theme(strip.text = element_text(face = "bold"))
+
+ggplot(df, aes(x = Date, y = euclidean_dist_from_dynamic, color = election_cycle, group = election_cycle)) +
+  geom_line() +
+  labs(title = "Euclidean Distance Across Different Election Cycles",
+       x = "Date",
+       y = "Euclidean Distance") +
+  facet_wrap(~ government_status, scales = "free_x") +
+  theme_bw() +
+  theme(strip.text = element_text(face = "bold"))
+
+```
+## Inspections
+```{r}
+
+df %>% group_by(Party_Name) %>% summarise(n = n())
+df %>% group_by(government_status) %>% summarise(n = n())
+df %>% group_by(government_status_finegrained) %>% summarise(n = n())
+
+```
+
+## Visualisations
+```{r}
+
+# Euclidean distance over time, with colour for government status
+df %>% ggplot(aes(x = Date,
+                  y = euclidean_dist_from_dynamic, 
+                  col = government_status)) +
+  geom_point() +
+  labs(title = "Euclidean distance across different types of government_status") +
+  theme(plot.title = element_text(face = "bold"))
+
+# Euclidean distance over time, with colour for government status, facet-wrapped for party
+ggplot(df, aes(x = as.numeric(Year), 
+               y = euclidean_dist_from_dynamic, 
+               col = government_status, 
+               group = Party_Name)) +
+  geom_line() +
+  labs(title = "Euclidean Distance Across Different Types of Government Status",
+       subtitle = "Purple Lines = Around New Election Cycle",
+       x = "Year",
+       y = "Euclidean Distance") +
+  theme(plot.title = element_text(face = "bold"), 
+        axis.text.x = element_text(angle = 90, hjust = 1)) +
+  scale_color_manual(values = c('coalition' = 'green', 'support' = 'blue', 'opposition' = 'red')) +
+  facet_wrap(~Party_Name, scales = "free_x") +
+  theme_bw() +
+  geom_vline(xintercept = c(1998, 2001, 2005, 2007, 2011, 2015, 2019), 
+             linetype = "dashed", color = "purple")
+```
+```{r}
+
+m1 <- lmer(euclidean_dist_from_dynamic ~ government_status + (1|Party_Name), data = df)
+m2 <- lmer(euclidean_dist_from_dynamic ~ government_status + seats + (1|Party_Name), data = df)
+m3 <- lmer(euclidean_dist_from_dynamic ~ government_status + seats + Year + (1|Party_Name), data = df)
+m4 <- lmer(euclidean_dist_from_dynamic ~ government_status + seats + Year + family_name + (1|Party_Name), data = df)
+m5 <- lmer(euclidean_dist_from_dynamic ~ government_status + seats  + days_until_election + (1|Party_Name), data = df)
+m6 <- lmer(euclidean_dist_from_dynamic ~ government_status + seats  + days_since_election + election_cycle+ (1|Party_Name), data = df)
+m6 <- lmer(euclidean_dist_from_dynamic ~ government_status + seats  + days_since_election + (1|Party_Name), data = df)
+
+# EUCLIDEAN DISTANCE
+cor.test(df$euclidean_dist_from_dynamic, df$seats, method = "kendall") # neg cor
+cor.test(df$euclidean_dist_from_dynamic, df$days_until_election, method = "kendall") # no cor
+cor.test(df$euclidean_dist_from_dynamic, df$days_since_election, method = "kendall") # slight pos cor
+cor.test(df$euclidean_dist_from_dynamic, df$cosine_similarity_from_dynamic, method = "kendall") # big neg cor (just a check)
+
+
+# COSINE
+cor.test(df$cosine_similarity_from_dynamic, df$seats, method = "spearman") # pos cor
+cor.test(df$cosine_similarity_from_dynamic, df$days_until_election, method = "spearman") # no cor
+cor.test(df$cosine_similarity_from_dynamic, df$days_since_election, method = "spearman") # slight neg cor
+
+summary(m6)
+anova(m1,m2,m3,m4,m5,m6)
+```
+## Data inspection-models
+Just some light models to check out possible associations between our outcome variable of interest and the predictors at hand.
+```{r}
+m1 <- lmer(euclidean_dist_from_dynamic ~ government_status + (1|Party_Name), data = df)
+m2 <- lmer(euclidean_dist_from_dynamic ~ seats + government_status + (1|Party_Name), data = df)
+m3 <- lmer(euclidean_dist_from_dynamic ~ seats + government_status + days_until_election + days_since_election + (1|Party_Name), data = df)
+m4 <- lmer(euclidean_dist_from_dynamic ~ seats + government_status + days_until_election + (1|Party_Name), data = df)
+
+m1 <- lmer(df$cosine_similarity_from_dynamic ~ government_status + (1|Party_Name), data = df)
+m2 <- lmer(cosine_similarity_from_dynamic ~ seats + government_status + (1|Party_Name), data = df)
+m3 <- lmer(cosine_similarity_from_dynamic ~ seats + government_status + days_until_election + days_since_election + (1|Party_Name), data = df)
+m4 <- lmer(cosine_similarity_from_dynamic ~ seats + government_status + days_until_election + (1|Party_Name), data = df)
+
+cor.test(df$euclidean_dist_from_dynamic, df$seats, method = "spearman") # neg cor
+cor.test(df$euclidean_dist_from_dynamic, df$days_until_election, method = "spearman") # no cor
+cor.test(df$euclidean_dist_from_dynamic, df$days_since_election, method = "spearman") # slight pos cor
+
+cor.test(df$cosine_similarity_from_dynamic, df$seats, method = "spearman") # pos cor
+cor.test(df$cosine_similarity_from_dynamic, df$days_until_election, method = "spearman") # no cor
+cor.test(df$cosine_similarity_from_dynamic, df$days_since_election, method = "spearman") # slight neg cor
+
+AIC(m1)
+AIC(m2)
+AIC(m3)
+AIC(m4)
+AIC(m5)
+
+df %>% ggplot(aes(x = government_status,y = euclidean_dist_from_dynamic, col = government_status))+geom_point()
+
+summary(model)
+```
+
