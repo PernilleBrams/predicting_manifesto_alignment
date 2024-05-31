@@ -1,14 +1,12 @@
-This repository contains code used in the exam for the course Data Science, Prediction, and Forecasting at the MSc Cognitive Science programme at Aarhus University. Contributors: Pernille Brams.
-
-# Predicting Manifesto Alignment of Danish Political Parties
+# Predicting Manifesto Alignment of Danish Political Parties 🏛️🇩🇰
 
 ## Overview
 
-This repository contains code and data for predicting manifesto alignment of Danish political parties based on parliamentary speech using various models. The repository is organized into three main folders: `nbs`, `data`, and `results`. The repository is part of an exam in the course Data Science, Prediction, and Forecasting at the MSc Cognitive Science programme at Aarhus University.
+This repository contains code and data for predicting manifesto alignment of Danish political parties based on parliamentary speech using tree-based (XGBoost and Random Forest) models. The repository is organized into three main folders: `nbs`, `data`, and `results` and is part of an exam in the course Data Science, Prediction, & Forecasting (S24) at the MSc Cognitive Science programme at Aarhus University.
 
 ## Note on Data Files
 
-Due to the large size of the data files (both raw and preprocessed), they cannot be uploaded directly to GitHub. As a workaround, should a viewer want to download the data files I prepared, the repository contains `.txt` files in the appropriate folders, which include links to Google Drive folders where the data can be downloaded and unpacked. These files will stay available until Autumn 2024.
+Due to the large size of the data files (both for raw and preprocessed), they cannot be uploaded directly to GitHub. As a workaround, should a viewer want to download the data files I prepared, the repository contains `.txt` files in the appropriate folders including links to Google Drive folders where the data can be downloaded for unpacking locally. These links will remain active until September 2024.
 
 As the raw data can be found online (see sources below) only the preprocessed versions and files for modeling are provided in the zip files. For any issues, please feel free to contact me at [au650502@cas.au.dk](mailto:au650502@cas.au.dk).
 
